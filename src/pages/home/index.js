@@ -9,7 +9,7 @@ const Home = () => {
   const loggingOut = async () => {
     await oktaAuth.signOut();
   }
-  
+
   return (
     <>
       <div className="bg-home bg-no-repeat bg-cover bg-center bg-fixed h-full w-full absolute">

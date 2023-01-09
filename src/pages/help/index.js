@@ -1,8 +1,8 @@
 
 export default function Help() {
-    return (
-        <>
-            help
-        </>
-    );
+  return (
+    <>
+      help
+    </>
+  );
 }
