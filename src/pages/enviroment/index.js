@@ -11,8 +11,13 @@ export default function Environment() {
 	const currentUser = useSelector(state => state.usersList)
 
 	const [showModal, setShowModal] = useState(false);
+	const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 	const [envList, setEnvList] = useState(null);
 	const [id, setId] = useState({});
+	const [indexToDelete, setIndexToDelete] = useState(-1);
+	const [showConfirmAdded, setShowConfirmAdded] = useState(false);
+	const [showErrorAddingEnv, setShowErrorAddingEnv] = useState(false);
+	const [errorMessage, setErrorMessage] = useState('');
 
 	if (envList === null) {
 		axios.get('https://639feb7024d74f9fe829db07.mockapi.io/api/v1/environment/?user_id=' + currentUser.id)
@@ -34,6 +39,8 @@ export default function Environment() {
 				if (response.data.status === "deleted") {
 				}
 			});
+		setIndexToDelete(-1);
+		setShowConfirmDelete(false)
 		setEnvList(selectedTmp);
 	}
 
@@ -57,6 +64,15 @@ export default function Environment() {
 	const clickModal = () => {
 		setId(-1)
 		setShowModal(true);
+	}
+
+	const closeSuccessOrErrorAddingEnvModal = (modal) => {
+		if(modal==='success'){
+			setShowConfirmAdded(false);
+		} else {
+			setErrorMessage('');
+			setShowErrorAddingEnv(false);
+		}
 	}
 
 	return (
@@ -113,7 +129,10 @@ export default function Environment() {
 													</td>
 													<td className="px-6 py-4 text-sm font-medium text-right whitespace-nowrap cursor-pointer">
 														<a className="text-red-500 hover:text-red-700"
-															onClick={() => deleteData(item.EnvironmentId)} >
+															onClick={() => {
+																setIndexToDelete(item.EnvironmentId);
+																setShowConfirmDelete(true)
+															}} >
 															Delete
 														</a>
 													</td>
@@ -128,8 +147,90 @@ export default function Environment() {
 			</div>
 
 			{showModal ? (
-				<Modal setShowModal={setShowModal} id={id} userID={currentUser.id} saveData={saveData} />
+				<Modal setErrorMessage={setErrorMessage} setShowConfirmAdded={setShowConfirmAdded} setShowErrorAddingEnv={setShowErrorAddingEnv} setShowModal={setShowModal} id={id} userID={currentUser.id} saveData={saveData} />
 			) : null}
+
+			{
+				showConfirmDelete && (
+					<div className="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+					<div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+					<div className="fixed inset-0 z-10 overflow-y-auto">
+					  <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+						<div className="relative transform overflow-hidden rounded-lg bg-white text-center shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+						  <div className="px-4 pt-5">
+							<div className="sm:flex sm:items-center">
+							  <div className="px-6 pb-0">
+								<h1 className="text-center">Are you sure want to delete environment?</h1>
+								<hr className="mt-2 mb-4"></hr>
+								<form>
+								  <div className=" pr-0 px-4 py-3 sm:flex sm:flex-row-reverse sm:pl-6">
+									<button type="button" className="inline-flex w-full justify-center rounded-md border border-transparent bg-green-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm" onClick={() => deleteData(indexToDelete)} >Delete</button>
+									<button type="button" className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm" onClick={() => ( setShowConfirmDelete(false), setIndexToDelete(-1) )}>Cancel</button>
+								  </div>
+								</form>
+							  </div>
+							</div>
+						  </div>
+						</div>
+					  </div>
+					</div>
+				  </div>
+				)
+			}
+			{
+				showConfirmAdded && (
+					<div className="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+					<div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+					<div className="fixed inset-0 z-10 overflow-y-auto">
+					  <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+						<div className="relative transform overflow-hidden rounded-lg bg-white text-center shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+						  <div className="px-4 pt-5">
+							<div className="sm:flex sm:items-center">
+							  <div className="px-6 pb-0">
+								<h1 className="text-center">Env Added SuccessFully</h1>
+								<hr className="mt-2 mb-4"></hr>
+								<form>
+								  <div className=" pr-0 px-4 py-3 sm:flex sm:flex-row-reverse sm:pl-6">
+									<button type="button" className="inline-flex w-full justify-center rounded-md border border-transparent bg-green-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm" onClick={() => closeSuccessOrErrorAddingEnvModal('error')} >Ok</button>
+								  </div>
+								</form>
+							  </div>
+							</div>
+						  </div>
+						</div>
+					  </div>
+					</div>
+				  </div>
+				)
+			}
+			{
+				showErrorAddingEnv && (
+					<div className="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+					<div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+					<div className="fixed inset-0 z-10 overflow-y-auto">
+					  <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+						<div className="relative transform overflow-hidden rounded-lg bg-white text-center shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+						  <div className="px-4 pt-5">
+							<div className="sm:flex sm:items-center">
+							  <div className="px-6 pb-0">
+								<h1 className="text-center">Error Adding enviornment: {errorMessage}</h1>
+								<hr className="mt-2 mb-4"></hr>
+								<form>
+								  <div className=" pr-0 px-4 py-3 sm:flex sm:flex-row-reverse sm:pl-6">
+									<button type="button" className="inline-flex w-full justify-center rounded-md border border-transparent bg-green-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm" onClick={() => closeSuccessOrErrorAddingEnvModal('error')} >Ok</button>
+								  </div>
+								</form>
+							  </div>
+							</div>
+						  </div>
+						</div>
+					  </div>
+					</div>
+				  </div>
+				)
+			}
+
+			
 		</>
 	);
 }
